@@ -1,0 +1,99 @@
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import AuthCard from '../components/auth/AuthCard'
+import Input from '../components/auth/Input'
+import GradientButton from '../components/auth/GradientButton'
+
+const SignIn = () => {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    // UI only - no real authentication
+    console.log('Sign in attempt:', formData)
+    // Navigate to home page
+    navigate('/home')
+  }
+
+  return (
+    <AuthCard
+      title="Welcome Back"
+      subtitle="Sign in to continue your experience"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Input
+          type="email"
+          name="email"
+          label="Email"
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+
+        <div>
+          <Input
+            type="password"
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="mt-2 text-right"
+          >
+            <Link
+              to="#"
+              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              onClick={(e) => {
+                e.preventDefault()
+                console.log('Forgot password clicked')
+              }}
+            >
+              Forgot password?
+            </Link>
+          </motion.div>
+        </div>
+
+        <GradientButton type="submit">
+          Sign In
+        </GradientButton>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="text-center mt-6"
+        >
+          <p className="text-gray-400 text-sm">
+            Don't have an account?{' '}
+            <Link
+              to="/signup"
+              className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+            >
+              Sign up
+            </Link>
+          </p>
+        </motion.div>
+      </form>
+    </AuthCard>
+  )
+}
+
+export default SignIn
+
