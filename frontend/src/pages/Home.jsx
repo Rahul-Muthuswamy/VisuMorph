@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../../assets/logo-modified.png'
+import CreateVideoIcon from '../components/icons/CreateVideoIcon'
+import MyVideoIcon from '../components/icons/MyVideoIcon'
+import HistoryIcon from '../components/icons/HistoryIcon'
 
 const Home = () => {
   const navigate = useNavigate()
+  const [hasActiveVideo, setHasActiveVideo] = useState(false)
+  const [videoCount, setVideoCount] = useState(12) // Mock data
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -32,8 +37,6 @@ const Home = () => {
   const cardHover = {
     scale: 1.02,
     y: -5,
-    boxShadow: '0 0 30px rgba(107, 33, 168, 0.4), 0 0 60px rgba(59, 130, 246, 0.3)',
-    borderColor: 'rgba(168, 85, 247, 0.5)',
     transition: {
       duration: 0.3,
       ease: 'easeOut',
@@ -54,18 +57,21 @@ const Home = () => {
   }
 
   const handleCreateVideo = () => {
-    // UI only - no real functionality
-    console.log('Create a New Video clicked')
+    // Navigate to video creation/recording page
+    console.log('Navigate to video creation')
+    // navigate('/create-video')
   }
 
   const handleMyVideo = () => {
-    // UI only - no real functionality
-    console.log('My Video clicked')
+    // Navigate to current video page
+    console.log('Navigate to my video')
+    // navigate('/my-video')
   }
 
   const handleHistory = () => {
-    // UI only - no real functionality
-    console.log('History of Videos clicked')
+    // Navigate to video history page
+    console.log('Navigate to history')
+    // navigate('/history')
   }
 
   return (
@@ -156,7 +162,7 @@ const Home = () => {
                 ease: 'linear',
               }}
             >
-              Home Page
+              Dashboard
             </motion.h1>
           </motion.div>
 
@@ -169,60 +175,81 @@ const Home = () => {
               duration: 0.6,
               ease: [0.6, -0.05, 0.01, 0.99],
             }}
-            className="glass rounded-2xl shadow-lg p-6 md:p-8 glow-gradient"
+            className="glass rounded-2xl shadow-lg p-6 md:p-10 lg:p-12 glow-gradient border-2 border-white/10"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full min-h-[500px]">
-              {/* Large Left Card - Create a New Video */}
-              <motion.div
-                variants={itemVariants}
-                onClick={handleCreateVideo}
-                className="lg:col-span-2 glass rounded-xl border border-white/20 cursor-pointer flex flex-col items-center justify-center relative overflow-hidden"
-                whileHover={cardHover}
-                whileTap={{ scale: 0.98 }}
-              >
-                {/* Animated background gradient on hover */}
+            <div className="space-y-6 md:space-y-8">
+              {/* Top Row - Two Equal Cards Side by Side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                {/* Left Card - Create a New Video */}
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0"
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="relative z-10 flex flex-col items-center justify-center"
+                  variants={itemVariants}
+                  onClick={handleCreateVideo}
+                  className="relative rounded-xl cursor-pointer flex flex-col items-center justify-center py-12 md:py-16 lg:py-20 min-h-[250px] md:min-h-[300px] overflow-hidden group"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                    border: '2px solid rgba(139, 92, 246, 0.3)',
+                    boxShadow: '0 0 30px rgba(139, 92, 246, 0.2)',
+                  }}
+                  whileHover={{
+                    ...cardHover,
+                    boxShadow: '0 0 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(167, 139, 250, 0.3)',
+                    borderColor: 'rgba(139, 92, 246, 0.5)',
+                  }}
+                  whileTap={{ scale: 0.98 }}
                 >
+                  {/* Animated background gradient */}
                   <motion.div
-                    className="w-12 h-12 md:w-16 md:h-16 border-2 border-purple-400/50 rounded mb-4 bg-gradient-to-br from-purple-500/20 to-blue-500/20"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
+                    className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-violet-500/10 opacity-0 group-hover:opacity-100"
+                    transition={{ duration: 0.3 }}
                   />
-                  <p className="text-lg md:text-xl font-medium text-gray-200">
-                    Create a New Video
-                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    className="relative z-10 flex flex-col items-center justify-center"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.05, 1],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      }}
+                      className="text-purple-400 mb-4 md:mb-6"
+                    >
+                      <CreateVideoIcon className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28" />
+                    </motion.div>
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-300 mb-2 text-center">
+                      Create a New Video
+                    </h2>
+                    <p className="text-sm md:text-base text-purple-200/70 text-center max-w-xs">
+                      Start recording with emotion-aware background intelligence
+                    </p>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
 
-              {/* Right Column - Two Stacked Cards */}
-              <div className="flex flex-col gap-6">
-                {/* Top Card - My Video */}
+                {/* Right Card - My Video */}
                 <motion.div
                   variants={itemVariants}
                   onClick={handleMyVideo}
-                  className="glass rounded-xl border border-white/20 cursor-pointer flex flex-col items-center justify-center py-8 relative overflow-hidden"
-                  whileHover={cardHover}
+                  className="relative rounded-xl cursor-pointer flex flex-col items-center justify-center py-12 md:py-16 lg:py-20 min-h-[250px] md:min-h-[300px] overflow-hidden group"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                    border: '2px solid rgba(139, 92, 246, 0.3)',
+                    boxShadow: '0 0 30px rgba(139, 92, 246, 0.2)',
+                  }}
+                  whileHover={{
+                    ...cardHover,
+                    boxShadow: '0 0 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(167, 139, 250, 0.3)',
+                    borderColor: 'rgba(139, 92, 246, 0.5)',
+                  }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  {/* Animated background gradient on hover */}
+                  {/* Animated background gradient */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0"
-                    whileHover={{ opacity: 1 }}
+                    className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-violet-500/10 opacity-0 group-hover:opacity-100"
                     transition={{ duration: 0.3 }}
                   />
                   <motion.div
@@ -232,9 +259,8 @@ const Home = () => {
                     className="relative z-10 flex flex-col items-center justify-center"
                   >
                     <motion.div
-                      className="w-10 h-10 md:w-12 md:h-12 border-2 border-purple-400/50 rounded mb-3 bg-gradient-to-br from-purple-500/20 to-blue-500/20"
                       animate={{
-                        scale: [1, 1.1, 1],
+                        scale: [1, 1.05, 1],
                       }}
                       transition={{
                         duration: 3,
@@ -242,37 +268,89 @@ const Home = () => {
                         ease: 'easeInOut',
                         delay: 0.5,
                       }}
-                    />
-                    <p className="text-base md:text-lg font-medium text-gray-200">
+                      className="text-purple-400 mb-4 md:mb-6"
+                    >
+                      <MyVideoIcon className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28" />
+                    </motion.div>
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-purple-300 mb-2 text-center">
                       My Video
+                    </h2>
+                    <p className="text-sm md:text-base text-purple-200/70 text-center max-w-xs">
+                      {hasActiveVideo ? 'Continue your current recording' : 'No active video'}
                     </p>
+                    {hasActiveVideo && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mt-3 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30"
+                      >
+                        <span className="text-xs text-purple-300 font-medium">Active</span>
+                      </motion.div>
+                    )}
                   </motion.div>
                 </motion.div>
-
-                {/* Bottom Card - History of Videos */}
-                <motion.div
-                  variants={itemVariants}
-                  onClick={handleHistory}
-                  className="glass rounded-xl border border-white/20 cursor-pointer flex flex-col items-center justify-center flex-1 relative overflow-hidden"
-                  whileHover={cardHover}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Animated background gradient on hover */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0"
-                    whileHover={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                    className="text-base md:text-lg font-medium text-gray-200 relative z-10"
-                  >
-                    History of Videos
-                  </motion.p>
-                </motion.div>
               </div>
+
+              {/* Bottom Row - Full Width History Card */}
+              <motion.div
+                variants={itemVariants}
+                onClick={handleHistory}
+                className="relative rounded-xl cursor-pointer flex flex-col items-center justify-center py-12 md:py-16 lg:py-20 min-h-[180px] md:min-h-[220px] overflow-hidden group"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%)',
+                  border: '2px solid rgba(139, 92, 246, 0.3)',
+                  boxShadow: '0 0 30px rgba(139, 92, 246, 0.2)',
+                }}
+                whileHover={{
+                  ...cardHover,
+                  boxShadow: '0 0 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(167, 139, 250, 0.3)',
+                  borderColor: 'rgba(139, 92, 246, 0.5)',
+                }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {/* Animated background gradient */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-violet-500/10 opacity-0 group-hover:opacity-100"
+                  transition={{ duration: 0.3 }}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="relative z-10 flex flex-col items-center justify-center"
+                >
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: 0.6,
+                    }}
+                    className="text-purple-400 mb-4 md:mb-6"
+                  >
+                    <HistoryIcon className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32" />
+                  </motion.div>
+                  <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-purple-300 mb-2 text-center">
+                    History of Videos
+                  </h2>
+                  <p className="text-base md:text-lg text-purple-200/70 text-center mb-3">
+                    Browse your past recordings with emotion data
+                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="px-6 py-2 rounded-full bg-purple-500/20 border border-purple-400/30"
+                  >
+                    <span className="text-sm md:text-base text-purple-300 font-semibold">
+                      {videoCount} videos saved
+                    </span>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         </motion.div>
