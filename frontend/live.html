@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VisuMorph Live Overlay</title>
+  <style>
+    body { background: black; color: #00ffcc; font-family: monospace; }
+    .box { padding: 12px; }
+  </style>
+</head>
+<body>
+  <div class="box" id="output">Waiting for stream...</div>
+
+  <script>
+    const sessionId = "3c91ba5d-243a-4795-9d20-b2d7c5c75723";
+    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/${sessionId}`);
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      document.getElementById("output").innerHTML = `
+        Buffer: ${JSON.stringify(data.buffer)}<br>
+        Final Emotion: ${data.final_emotion}<br>
+        Bucket: ${data.bucket}<br>
+        Background: ${data.background}
+      `;
+    };
+  </script>
+</body>
+</html>
