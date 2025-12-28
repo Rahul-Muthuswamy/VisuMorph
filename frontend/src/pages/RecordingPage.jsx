@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import logo from '../../../assets/logo-modified.png'
@@ -16,6 +16,16 @@ const RecordingPage = () => {
   const [error, setError] = useState(null)
   const [recordingTime, setRecordingTime] = useState(0)
 
+  // Settings state
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [availableCameras, setAvailableCameras] = useState([])
+  const [availableMics, setAvailableMics] = useState([])
+  const [selectedCameraId, setSelectedCameraId] = useState('')
+  const [selectedMicId, setSelectedMicId] = useState('')
+  const [resolution, setResolution] = useState('medium') // low, medium, high
+  const [mirrorPreview, setMirrorPreview] = useState(false)
+  const [fps, setFps] = useState(30)
+
   // Timer for recording duration
   useEffect(() => {
     let interval = null
@@ -31,6 +41,47 @@ const RecordingPage = () => {
     }
   }, [isRecording])
 
+  // Enumerate available devices
+  const enumerateDevices = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const cameras = devices.filter(device => device.kind === 'videoinput')
+      const mics = devices.filter(device => device.kind === 'audioinput')
+      
+      setAvailableCameras(cameras)
+      setAvailableMics(mics)
+      
+      // Set default selections only if not already set
+      setSelectedCameraId(prev => {
+        if (prev || cameras.length === 0) return prev
+        return cameras[0].deviceId
+      })
+      setSelectedMicId(prev => {
+        if (prev || mics.length === 0) return prev
+        return mics[0].deviceId
+      })
+    } catch (err) {
+      console.error('Error enumerating devices:', err)
+      // Don't set error for initial enumeration failure
+    }
+  }, [])
+
+  // Initial device enumeration (without requesting permissions)
+  useEffect(() => {
+    enumerateDevices()
+  }, [enumerateDevices])
+
+  // Re-enumerate devices after camera starts (to get labels)
+  useEffect(() => {
+    if (isCameraActive && mediaStream) {
+      // Small delay to ensure stream is fully established
+      const timer = setTimeout(() => {
+        enumerateDevices()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isCameraActive, mediaStream, enumerateDevices])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -43,25 +94,76 @@ const RecordingPage = () => {
     }
   }, [mediaStream, recordedVideoUrl])
 
+  // Get video constraints based on settings
+  const getVideoConstraints = () => {
+    const resolutions = {
+      low: { width: 640, height: 480 },
+      medium: { width: 1280, height: 720 },
+      high: { width: 1920, height: 1080 }
+    }
+
+    const constraints = {
+      deviceId: selectedCameraId ? { exact: selectedCameraId } : undefined,
+      ...resolutions[resolution],
+      frameRate: { ideal: fps }
+    }
+
+    // Remove undefined values
+    Object.keys(constraints).forEach(key => {
+      if (constraints[key] === undefined) {
+        delete constraints[key]
+      }
+    })
+
+    return constraints
+  }
+
+  // Get audio constraints based on settings
+  const getAudioConstraints = () => {
+    if (!selectedMicId) {
+      return true // Use default microphone
+    }
+    return { deviceId: { exact: selectedMicId } }
+  }
+
   // Start camera and microphone
-  const startCamera = async () => {
+  const startCamera = async (useCurrentSettings = true) => {
     try {
       setError(null)
+      
+      // Stop existing stream if any
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop())
+        setMediaStream(null)
+      }
+
+      // Use provided settings or current state
+      const videoConstraints = useCurrentSettings ? getVideoConstraints() : { video: true }
+      const audioConstraints = useCurrentSettings ? getAudioConstraints() : { audio: true }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+        video: videoConstraints,
+        audio: audioConstraints
       })
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        // Apply mirror effect if enabled
+        videoRef.current.style.transform = mirrorPreview ? 'scaleX(-1)' : 'none'
         // Ensure video plays
-        videoRef.current.play().catch(err => {
+        await videoRef.current.play().catch(err => {
           console.error('Error playing video:', err)
         })
       }
 
       setMediaStream(stream)
       setIsCameraActive(true)
+      
+      // Re-enumerate devices to get labels after permission granted
+      // Use setTimeout to avoid race conditions
+      setTimeout(() => {
+        enumerateDevices()
+      }, 300)
     } catch (err) {
       console.error('Error accessing camera/microphone:', err)
       setError(
@@ -69,9 +171,71 @@ const RecordingPage = () => {
           ? 'Camera and microphone access denied. Please allow permissions and try again.'
           : err.name === 'NotFoundError'
           ? 'No camera or microphone found. Please connect a device and try again.'
+          : err.name === 'OverconstrainedError'
+          ? 'Selected device or settings not supported. Try different settings.'
           : 'Failed to access camera or microphone. Please check your device settings.'
       )
       setIsCameraActive(false)
+      setMediaStream(null)
+    }
+  }
+
+  // Restart camera with new settings
+  const restartCameraWithSettings = async () => {
+    if (isCameraActive && !isRecording) {
+      // Small delay to ensure state is updated
+      await new Promise(resolve => setTimeout(resolve, 50))
+      await startCamera(true)
+    }
+  }
+
+  // Handle camera change
+  const handleCameraChange = async (deviceId) => {
+    if (isRecording) return
+    
+    setSelectedCameraId(deviceId)
+    if (isCameraActive) {
+      await restartCameraWithSettings()
+    }
+  }
+
+  // Handle microphone change
+  const handleMicChange = async (deviceId) => {
+    if (isRecording) return
+    
+    setSelectedMicId(deviceId)
+    if (isCameraActive) {
+      await restartCameraWithSettings()
+    }
+  }
+
+  // Handle resolution change
+  const handleResolutionChange = async (res) => {
+    if (isRecording) return
+    
+    setResolution(res)
+    if (isCameraActive) {
+      await restartCameraWithSettings()
+    }
+  }
+
+  // Handle mirror preview change
+  const handleMirrorChange = (mirror) => {
+    if (isRecording) return
+    
+    setMirrorPreview(mirror)
+    if (videoRef.current) {
+      videoRef.current.style.transform = mirror ? 'scaleX(-1)' : 'none'
+    }
+  }
+
+  // Handle FPS change
+  const handleFpsChange = async (newFps) => {
+    if (isRecording) return
+    
+    setFps(newFps)
+    if (isCameraActive) {
+      await restartCameraWithSettings()
     }
   }
 
@@ -406,11 +570,17 @@ const RecordingPage = () => {
                 ⬇️ Download Video
               </motion.button>
 
-              {/* Settings Button (UI only) */}
+              {/* Settings Button */}
               <motion.button
-                className="px-6 py-3 rounded-xl font-semibold bg-gray-600/50 text-white border border-gray-500/50"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                onClick={() => setSettingsOpen(true)}
+                disabled={isRecording}
+                className={`px-6 py-3 rounded-xl font-semibold ${
+                  isRecording
+                    ? 'bg-gray-600/30 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-600/50 text-white border border-gray-500/50'
+                }`}
+                whileHover={!isRecording ? { scale: 1.05 } : {}}
+                whileTap={!isRecording ? { scale: 0.95 } : {}}
               >
                 ⚙️ Settings
               </motion.button>
@@ -427,6 +597,180 @@ const RecordingPage = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Settings Modal */}
+      {settingsOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setSettingsOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            onClick={(e) => e.stopPropagation()}
+            className="glass rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto glow-gradient border-2 border-white/10"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                Settings
+              </h2>
+              <motion.button
+                onClick={() => setSettingsOpen(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+            </div>
+
+            {isRecording && (
+              <div className="mb-4 p-3 rounded-lg bg-yellow-500/20 border border-yellow-400/30 text-yellow-200 text-sm">
+                Settings are disabled while recording. Stop recording to change settings.
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {/* Camera Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Camera
+                </label>
+                <select
+                  value={selectedCameraId || ''}
+                  onChange={(e) => handleCameraChange(e.target.value)}
+                  disabled={isRecording || availableCameras.length === 0}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-400/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {availableCameras.length === 0 ? (
+                    <option value="" className="bg-gray-900">No cameras available</option>
+                  ) : (
+                    availableCameras.map((camera) => (
+                      <option key={camera.deviceId} value={camera.deviceId} className="bg-gray-900">
+                        {camera.label || `Camera ${camera.deviceId.slice(0, 8)}`}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="mt-1 text-xs text-gray-400">
+                  Select which camera to use for recording
+                </p>
+              </div>
+
+              {/* Microphone Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Microphone
+                </label>
+                <select
+                  value={selectedMicId || ''}
+                  onChange={(e) => handleMicChange(e.target.value)}
+                  disabled={isRecording || availableMics.length === 0}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-400/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {availableMics.length === 0 ? (
+                    <option value="" className="bg-gray-900">No microphones available</option>
+                  ) : (
+                    availableMics.map((mic) => (
+                      <option key={mic.deviceId} value={mic.deviceId} className="bg-gray-900">
+                        {mic.label || `Microphone ${mic.deviceId.slice(0, 8)}`}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="mt-1 text-xs text-gray-400">
+                  Select which microphone to use for recording
+                </p>
+              </div>
+
+              {/* Video Quality */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Video Quality
+                </label>
+                <select
+                  value={resolution}
+                  onChange={(e) => handleResolutionChange(e.target.value)}
+                  disabled={isRecording}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-400/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="low" className="bg-gray-900">Low (640×480)</option>
+                  <option value="medium" className="bg-gray-900">Medium (1280×720)</option>
+                  <option value="high" className="bg-gray-900">High (1920×1080)</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-400">
+                  Higher quality uses more bandwidth and storage
+                </p>
+              </div>
+
+              {/* FPS Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Frame Rate
+                </label>
+                <select
+                  value={fps}
+                  onChange={(e) => handleFpsChange(Number(e.target.value))}
+                  disabled={isRecording}
+                  className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:border-purple-400/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value={30} className="bg-gray-900">30 FPS</option>
+                  <option value={60} className="bg-gray-900">60 FPS</option>
+                </select>
+                <p className="mt-1 text-xs text-gray-400">
+                  Higher frame rate provides smoother video
+                </p>
+              </div>
+
+              {/* Mirror Preview Toggle */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    Mirror Preview
+                  </label>
+                  <p className="text-xs text-gray-400">
+                    Flip preview horizontally (does not affect recording)
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleMirrorChange(!mirrorPreview)}
+                  disabled={isRecording}
+                  className={`relative w-14 h-7 rounded-full transition-colors ${
+                    mirrorPreview ? 'bg-purple-500' : 'bg-gray-600'
+                  } ${isRecording ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <motion.div
+                    className="absolute top-1 left-1 w-5 h-5 bg-white rounded-full"
+                    animate={{
+                      x: mirrorPreview ? 28 : 0
+                    }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <div className="mt-6 flex justify-end">
+              <motion.button
+                onClick={() => setSettingsOpen(false)}
+                className="px-6 py-2 rounded-xl font-semibold bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Close
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   )
 }
