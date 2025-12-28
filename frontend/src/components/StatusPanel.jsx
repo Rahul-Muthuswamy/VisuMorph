@@ -64,3 +64,5 @@ const StatusPanel = ({ emotionValue, isRecording = false }) => {
 
 export default StatusPanel
 
+
+

@@ -83,3 +83,5 @@ const PreviewCard = ({ emotionValue }) => {
 
 export default PreviewCard
 
+
+

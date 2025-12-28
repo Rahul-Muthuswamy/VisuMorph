@@ -40,3 +40,5 @@ const Input = ({ type = 'text', placeholder, label, value, onChange, ...props })
 
 export default Input
 
+
+

@@ -64,3 +64,5 @@ const AnimatedBackground = ({ opacity = 20 }) => {
 
 export default AnimatedBackground
 
+
+
