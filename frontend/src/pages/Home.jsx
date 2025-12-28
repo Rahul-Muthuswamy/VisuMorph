@@ -58,8 +58,7 @@ const Home = () => {
 
   const handleCreateVideo = () => {
     // Navigate to video creation/recording page
-    console.log('Navigate to video creation')
-    // navigate('/create-video')
+    navigate('/recording')
   }
 
   const handleMyVideo = () => {
