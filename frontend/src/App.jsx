@@ -15,6 +15,8 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/home" element={<Home />} />
         <Route path="/recording" element={<RecordingPage />} />
+        {/* Redirect unknown routes to home instead of blank page */}
+        <Route path="*" element={<Home />} />
       </Routes>
     </Router>
   )

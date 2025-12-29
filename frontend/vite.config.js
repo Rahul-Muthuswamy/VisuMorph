@@ -6,8 +6,13 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    // Ensure static files in public folder are served correctly
+    middlewareMode: false,
   },
+  // Ensure public folder files are copied and accessible
+  publicDir: 'public',
 })
+
 
 
 
