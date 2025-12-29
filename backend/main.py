@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uuid
 from fastapi import WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from websocket_manager import ws_manager
 from state.sessions import (
     create_session,
@@ -10,9 +11,18 @@ from state.sessions import (
 )
 from state.background_state import init_session_backgrounds, add_background
 
-from kafka.producer import send_emotion_event
+from kafka_service.producer import send_emotion_event
 
 app = FastAPI(title="VisuMorph API (Kafka Mode)")
+
+# CORS middleware for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # =========================

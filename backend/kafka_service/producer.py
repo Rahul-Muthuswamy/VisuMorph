@@ -1,6 +1,6 @@
 import json
 from kafka import KafkaProducer
-from kafka.topics import EMOTION_TOPIC
+from kafka_service.topics import EMOTION_TOPIC
 
 producer = KafkaProducer(
     bootstrap_servers="localhost:9092",
