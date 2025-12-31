@@ -1,6 +1,3 @@
-/**
- * WebSocket service for real-time background updates
- */
 export class WebSocketService {
   constructor(sessionId) {
     this.sessionId = sessionId
@@ -12,9 +9,6 @@ export class WebSocketService {
     this.isConnected = false
   }
 
-  /**
-   * Connect to WebSocket
-   */
   connect() {
     const wsUrl = `ws://localhost:8000/ws/${this.sessionId}`
     
@@ -55,9 +49,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Attempt to reconnect
-   */
   attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++
@@ -71,9 +62,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Send message to WebSocket
-   */
   send(message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message))
@@ -82,9 +70,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Subscribe to events
-   */
   on(event, callback) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, [])
@@ -92,9 +77,6 @@ export class WebSocketService {
     this.listeners.get(event).push(callback)
   }
 
-  /**
-   * Unsubscribe from events
-   */
   off(event, callback) {
     if (this.listeners.has(event)) {
       const callbacks = this.listeners.get(event)
@@ -105,9 +87,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Emit event to listeners
-   */
   emit(event, data) {
     if (this.listeners.has(event)) {
       this.listeners.get(event).forEach(callback => {
@@ -120,9 +99,6 @@ export class WebSocketService {
     }
   }
 
-  /**
-   * Disconnect WebSocket
-   */
   disconnect() {
     if (this.ws) {
       this.ws.close()

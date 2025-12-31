@@ -4,29 +4,47 @@ import { motion } from 'framer-motion'
 import AuthCard from '../components/auth/AuthCard'
 import Input from '../components/auth/Input'
 import GradientButton from '../components/auth/GradientButton'
+import { signup } from '../services/auth'
 
 const SignUp = () => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: '',
   })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
+    setError('') // Clear error on input change
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // UI only - no real authentication
-    console.log('Sign up attempt:', formData)
-    // Navigate to home page
-    navigate('/home')
+    setError('')
+    setLoading(true)
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+
+    try {
+      await signup(formData.email, formData.password)
+      // Navigate to home page on success
+      navigate('/home')
+    } catch (err) {
+      setError(err.message || 'Failed to create account')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,15 +53,11 @@ const SignUp = () => {
       subtitle="Start your emotion-aware experience"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Input
-          type="text"
-          name="name"
-          label="Name"
-          placeholder="Enter your name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+        {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
         <Input
           type="email"
@@ -75,8 +89,8 @@ const SignUp = () => {
           required
         />
 
-        <GradientButton type="submit">
-          Create Account
+        <GradientButton type="submit" disabled={loading}>
+          {loading ? 'Creating Account...' : 'Create Account'}
         </GradientButton>
 
         <motion.div

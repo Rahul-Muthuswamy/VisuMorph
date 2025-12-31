@@ -16,12 +16,16 @@ uvicorn[standard]>=0.24.0,<0.30.0
 # Data Validation (Pydantic 2.x compatible with FastAPI 0.104+)
 pydantic>=2.5.0,<3.0.0
 
-# Kafka Integration
-kafka-python>=2.0.2,<3.0.0
-six>=1.16.0  # Required dependency for kafka-python
+# Kafka Integration (Confluent Cloud)
+confluent-kafka>=2.3.0,<3.0.0
+python-dotenv>=1.0.0  # For loading environment variables
 
 # WebSocket Support (included with FastAPI, but explicit for clarity)
 websockets>=12.0,<13.0
+
+# Database & Authentication
+psycopg2-binary>=2.9.0,<3.0.0  # PostgreSQL adapter
+passlib[bcrypt]>=1.7.4,<2.0.0  # Password hashing with bcrypt
 
 # Optional: Development tools (uncomment if needed)
 # python-multipart>=0.0.6  # For file uploads (if needed in future)

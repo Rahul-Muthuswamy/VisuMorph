@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import AuthCard from '../components/auth/AuthCard'
 import Input from '../components/auth/Input'
 import GradientButton from '../components/auth/GradientButton'
+import { login } from '../services/auth'
 
 const SignIn = () => {
   const navigate = useNavigate()
@@ -11,20 +12,31 @@ const SignIn = () => {
     email: '',
     password: '',
   })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
+    setError('') // Clear error on input change
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // UI only - no real authentication
-    console.log('Sign in attempt:', formData)
-    // Navigate to home page
-    navigate('/home')
+    setError('')
+    setLoading(true)
+
+    try {
+      await login(formData.email, formData.password)
+      // Navigate to home page on success
+      navigate('/home')
+    } catch (err) {
+      setError(err.message || 'Failed to login')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -33,6 +45,12 @@ const SignIn = () => {
       subtitle="Sign in to continue your experience"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         <Input
           type="email"
           name="email"
@@ -70,8 +88,8 @@ const SignIn = () => {
           </motion.div>
         </div>
 
-        <GradientButton type="submit">
-          Sign In
+        <GradientButton type="submit" disabled={loading}>
+          {loading ? 'Signing In...' : 'Sign In'}
         </GradientButton>
 
         <motion.div

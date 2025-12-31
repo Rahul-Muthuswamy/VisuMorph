@@ -1,15 +1,23 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-/**
- * Create a new video recording session
- */
+const getHeaders = () => {
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  
+  const userId = localStorage.getItem('user_id')
+  if (userId) {
+    headers['X-USER-ID'] = userId
+  }
+  
+  return headers
+}
+
 export const createSession = async (videoContext = 'general', dressColor = 'none') => {
   try {
     const response = await fetch(`${API_BASE_URL}/session/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
         video_context: videoContext,
         dress_color: dressColor,
@@ -28,16 +36,11 @@ export const createSession = async (videoContext = 'general', dressColor = 'none
   }
 }
 
-/**
- * Start a recording session
- */
 export const startSession = async (sessionId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/session/${sessionId}/start`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
     })
 
     if (!response.ok) {
@@ -52,16 +55,11 @@ export const startSession = async (sessionId) => {
   }
 }
 
-/**
- * Send emotion event to backend (Kafka)
- */
 export const sendEmotion = async (sessionId, emotionValue) => {
   try {
     const response = await fetch(`${API_BASE_URL}/session/${sessionId}/emotion`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
         emotion_value: emotionValue,
       }),
@@ -79,9 +77,6 @@ export const sendEmotion = async (sessionId, emotionValue) => {
   }
 }
 
-/**
- * Health check
- */
 export const healthCheck = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/`)
