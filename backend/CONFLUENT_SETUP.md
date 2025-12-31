@@ -116,3 +116,5 @@ The application now uses:
 This architecture demonstrates real-time AI/ML processing on data in motion, which is the core requirement of the Confluent Challenge.
 
 
+
+

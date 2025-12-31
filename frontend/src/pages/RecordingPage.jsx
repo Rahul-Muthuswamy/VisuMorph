@@ -18,9 +18,9 @@ const RecordingPage = () => {
   const emotionDetectionRef = useRef(null)
   const backgroundImageRef = useRef(null)
   const selfieSegmentationRef = useRef(null)
-  const maskCanvasRef = useRef(null)
-  const currentBackgroundRef = useRef(null)
-  const currentEmotionNameRef = useRef('Neutral')
+  const maskCanvasRef = useRef(null) // Temporary canvas for mask processing
+  const currentBackgroundRef = useRef(null) // Ref to track current background for MediaPipe callback
+  const currentEmotionNameRef = useRef('Neutral') // Ref to always have latest emotion name for canvas (always current)
 
   const [mediaStream, setMediaStream] = useState(null)
   const [isRecording, setIsRecording] = useState(false)
@@ -29,11 +29,12 @@ const RecordingPage = () => {
   const [error, setError] = useState(null)
   const [recordingTime, setRecordingTime] = useState(0)
   
+  // Backend integration state
   const [sessionId, setSessionId] = useState(null)
   const [isSessionActive, setIsSessionActive] = useState(false)
   const [currentBackground, setCurrentBackground] = useState(null)
-  const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
-  const [backgroundImages, setBackgroundImages] = useState([])
+  const [backgroundImageIndex, setBackgroundImageIndex] = useState(0) // Track which image we're on
+  const [backgroundImages, setBackgroundImages] = useState([]) // Store loaded image objects
   const backgroundImageRefs = useRef([]) // Store image refs for quick access
   
   // List of background image paths to cycle through
@@ -719,10 +720,6 @@ const RecordingPage = () => {
       console.warn('   Emotion detection and background changes will still work locally')
       console.warn('   Error details:', err.message || err)
       
-      // If session creation fails, don't block the app but also don't set session as active
-      setIsSessionActive(false)
-      setSessionId(null)
-      
       // Don't show error to user - app works fine without backend
       // Backend is optional for emotion detection and background changes
       setIsConnecting(false)
@@ -762,15 +759,13 @@ const RecordingPage = () => {
         await sendEmotion(sessionId, emotionValue)
         console.log('📤 Sent emotion to Kafka stream via backend:', emotionValue, `(${displayName})`)
       } catch (err) {
-        // Only log error if it's not a 401 (authentication) error - those are expected if user is not logged in
-        if (err.message && !err.message.includes('401')) {
-          console.error('❌ Failed to send emotion to Kafka stream:', err)
-          console.error('   Make sure backend and Kafka are running for full functionality')
-        }
+        console.error('❌ Failed to send emotion to Kafka stream:', err)
+        console.error('   Make sure backend and Kafka are running for full functionality')
         // Continue emotion detection but background won't update via Kafka
       }
+    } else {
+      console.warn('⚠️  Session not active - emotion not sent to Kafka stream')
     }
-    // Removed warning message - session might not be active if backend is unavailable, which is OK
   }, [sessionId, isSessionActive, getEmotionName])
 
   // Track if we've initialized the background (use ref to persist across renders)

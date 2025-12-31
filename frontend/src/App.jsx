@@ -5,7 +5,6 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Home from './pages/Home'
 import RecordingPage from './pages/RecordingPage'
-import Documentation from './pages/Documentation'
 
 function App() {
   return (
@@ -16,7 +15,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/home" element={<Home />} />
         <Route path="/recording" element={<RecordingPage />} />
-        <Route path="/documentation" element={<Documentation />} />
+        {/* Redirect unknown routes to home instead of blank page */}
         <Route path="*" element={<Home />} />
       </Routes>
     </Router>
