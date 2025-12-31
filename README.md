@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- PROJECT LOGO -->
-<img src="./assets/logo-modified.png" width="600" alt="VisuMorph Logo"/>
+<img src="./assets/logo-modified.png" width="800" alt="VisuMorph Logo"/>
 
 <br/>
 
@@ -24,8 +24,8 @@
 
 <!-- ACTION BUTTONS -->
 <div align="center">
-  <a href="#" target="_blank"><strong>🎥 Watch Demo</strong></a> • 
-  <a href="#" target="_blank"><strong>📄 Documentation</strong></a>
+  <a href="#" target="https://youtu.be/1KWCY_WHb9k"><strong>🎥 Watch Demo</strong></a> • 
+  <a href="#" target="https://visu-morph.vercel.app/documentation"><strong>📄 Documentation</strong></a>
 </div>
 
 <br/>
@@ -665,4 +665,5 @@ By combining AI with real-time data streaming, we're bringing emotional awarenes
 **⭐ Star this repository if you believe in emotion-aware streaming!**
 
 </div>
+
 
