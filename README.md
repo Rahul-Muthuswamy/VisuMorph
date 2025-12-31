@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- PROJECT LOGO -->
-<img src="./assets/logo-modified.png" width="600" alt="VisuMorph Logo"/>
+<img src="./assets/logo-modified.png" width="200" alt="VisuMorph Logo"/>
 
 <br/>
 
@@ -619,8 +619,8 @@ We welcome contributions from the community! Whether it's bug fixes, new feature
 
 Built with passion by developers who believe in making streaming more expressive and emotionally engaging.
 
-## **[Muthuswamy M]]** – [GitHub](https://github.com/Rahul-Muthuswamy) • [LinkedIn](https://linkedin.com/in/muthuswamym)
-## **[Dilip Kumar P]** – [GitHub](https://github.com/) • [LinkedIn](https://linkedin.com/in/yourprofile)
+## **Muthuswamy M** – [GitHub](https://github.com/Rahul-Muthuswamy) • [LinkedIn](https://linkedin.com/in/muthuswamym)
+## **Dilip Kumar P** – [GitHub](https://github.com/dilipkumar08) • [LinkedIn](https://www.linkedin.com/in/dilip-kumar-hello-world/)
 
 </div>
 
@@ -634,7 +634,7 @@ Built with passion by developers who believe in making streaming more expressive
 
 <div style="border-left: 4px solid #4ECDC4; padding-left: 20px; margin: 20px 0;">
 
-VisuMorph is licensed under the **MIT License**. See [LICENSE](./LICENSE) for details.
+## VisuMorph is licensed under the **MIT License**. See [LICENSE](./LICENSE) for details.
 
 </div>
 
@@ -665,4 +665,3 @@ By combining AI with real-time data streaming, we're bringing emotional awarenes
 **⭐ Star this repository if you believe in emotion-aware streaming!**
 
 </div>
-
