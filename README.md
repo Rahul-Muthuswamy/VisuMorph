@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- PROJECT LOGO -->
-<img src="./assets/logo-modified.png" width="200" alt="VisuMorph Logo"/>
+<img src="./assets/logo-modified.png" width="600" alt="VisuMorph Logo"/>
 
 <br/>
 
@@ -665,3 +665,4 @@ By combining AI with real-time data streaming, we're bringing emotional awarenes
 **⭐ Star this repository if you believe in emotion-aware streaming!**
 
 </div>
+
